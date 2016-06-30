@@ -9,20 +9,20 @@ fun! s:FindProjectPath(path)
     return path
 endf
 
-fun! Insert(result)
-    call Delete('%')
+fun! s:Insert(result)
+    call s:Delete('%')
     call append('0', a:result)
-    call Delete('$')
+    call s:Delete('$')
     normal gg
 endf
 
-fun! Delete(range)
+fun! s:Delete(range)
     exec "silent " . a:range . "delete _"
 endf
 
-fun! Find(path)
-
-    let ignoredFolders = s:GetIgnoredFolders(a:path)
+fun! s:Find(path)
+    let defaultIgnored = ['/\.', 'node_modules/', 'vendor/']
+    let ignoredFolders = s:GetIgnoredFolders(a:path) + defaultIgnored
     let grepExlude = join(ignoredFolders, '\|')
     if strlen(grepExlude) == 0
         let command = "find " . a:path
@@ -34,14 +34,14 @@ fun! Find(path)
     return split(resultOneLIne)
 endf
 
-fun! InsertFind(path)
-    let files = Find(a:path)
-    let shortFiles = ShortenFiles(files, a:path)
+fun! s:InsertFind(path)
+    let files = s:Find(a:path)
+    let shortFiles = s:ShortenFiles(files, a:path)
     let filteredFiles = filter(shortFiles, "strlen(v:val) && match(v:val, '^\\.') == -1")
-    call Insert(filteredFiles)
+    call s:Insert(filteredFiles)
 endf
 
-fun! ShortenFiles(files, path)
+fun! s:ShortenFiles(files, path)
     let list = []
     for file in a:files
         let substituted = substitute(file, a:path, '', '')
@@ -55,9 +55,19 @@ fun! s:EditFile(path)
     exec "e " . a:path
 endf
 
-fun! EditFileUnderCursor()
+fun! FlackEditFileUnderCursor()
     let line = getline('.')
-    call s:EditFile(b:explorerPath . line)
+    let path = b:explorerPath . line
+    if isdirectory(path)
+        call s:Explorer(path)
+    else
+        exec "e " . path
+    endif
+endf
+
+fun! FlackUpOneDirectory()
+    let upped = substitute(b:explorerPath, '[^/]*/$', '', '')
+    call s:Explorer(upped)
 endf
 
 fun! s:ExploreIfDirectory(path)
@@ -66,23 +76,35 @@ fun! s:ExploreIfDirectory(path)
             autocmd!
         augroup END
 
-        let safePath = substitute(a:path, '\([^/]$\)', '\1/', '')
-        echo safePath
-        call Explorer(safePath)
+        call s:Explorer(a:path)
     endif
 endf
 
-fun! Explorer(path)
+
+fun! s:Explorer(path)
+    if !exists('b:isFlack') || strlen(a:path) == 0
+        echo "new flack"
+        :enew
+        let b:isFlack = 1
+    else
+        echo "same flack"
+    endif
+
+
+    let safePath = substitute(a:path, '\([^/]$\)', '\1/', '')
+
     :set buftype=nofile
 
     let projectPath = s:FindProjectPath(fnamemodify(getcwd(), ':p'))
-    let b:explorerPath = a:path
+    let b:explorerPath = safePath
+
     if strlen(a:path) == 0
         let b:explorerPath = projectPath
     endif
 
-    nnore <silent> <buffer> <CR> :call EditFileUnderCursor()<CR>
-    call InsertFind(b:explorerPath)
+    nnore <silent> <buffer> <CR> :call FlackEditFileUnderCursor()<CR>
+    nnore <silent> <buffer> <BS> :call FlackUpOneDirectory()<CR>
+    call s:InsertFind(b:explorerPath)
 
 endf
 
@@ -96,6 +118,16 @@ function! s:GetIgnoredFolders(path)
     return folders
 endfunction
 
-augroup flack
-    autocmd BufEnter,VimEnter * call s:ExploreIfDirectory(expand('<amatch>'))
-augroup END
+
+fun! s:Init()
+    augroup flack
+        autocmd BufEnter,VimEnter * call s:ExploreIfDirectory(expand('<amatch>'))
+    augroup END
+
+    com! Flack :call s:Explorer("")
+endf
+
+if !exists('s:ranOnce')
+    let s:ranOnce = 1
+    call s:Init()
+endif
