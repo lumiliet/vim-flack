@@ -89,6 +89,7 @@ fun! s:Explorer(path)
 
     let safePath = substitute(a:path, '\([^/]$\)', '\1/', '')
 
+
     :set buftype=nofile
 
     let projectPath = s:FindProjectPath(fnamemodify(getcwd(), ':p'))
