@@ -83,13 +83,9 @@ endf
 
 fun! s:Explorer(path)
     if !exists('b:isFlack') || strlen(a:path) == 0
-        echo "new flack"
         :enew
         let b:isFlack = 1
-    else
-        echo "same flack"
     endif
-
 
     let safePath = substitute(a:path, '\([^/]$\)', '\1/', '')
 
