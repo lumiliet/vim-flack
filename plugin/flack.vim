@@ -1,6 +1,6 @@
 fun! s:FindProjectPath(path)
     let path = finddir('.git', a:path . ';~/')
-    if len(path) && g:pathfinder_look_for_git
+    if len(path)
         let path = fnamemodify(path, ':h')
     else
         let path = fnamemodify(a:path, ':p')
@@ -109,7 +109,7 @@ function! s:GetIgnoredFolders(path)
     let gitignore = a:path . '/.gitignore'
     let command = "cat " . gitignore . " | grep '/$'"
     let folders = []
-    if filereadable(gitignore) && g:pathfinder_use_gitignore
+    if filereadable(gitignore)
         let folders = split(system(command))
     endif
     return folders
