@@ -21,7 +21,7 @@ fun! s:Delete(range)
 endf
 
 fun! s:Find(path)
-    let defaultIgnored = ['/\.', 'node_modules/', 'vendor/']
+    let defaultIgnored = ['/\.git\(/\|$\)', 'node_modules/', 'vendor/']
     let ignoredFolders = s:GetIgnoredFolders(a:path) + defaultIgnored
     let grepExlude = join(ignoredFolders, '\|')
     if strlen(grepExlude) == 0
