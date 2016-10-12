@@ -82,15 +82,15 @@ endf
 
 
 fun! s:Explorer(path)
-    if !exists('b:isFlack') || strlen(a:path) == 0
+    if !exists('b:flackBufferNumber') || strlen(a:path) == 0
         :enew
-        let b:isFlack = 1
+
+        let b:flackBufferNumber = bufnr('%')
     endif
 
     let safePath = substitute(a:path, '\([^/]$\)', '\1/', '')
 
     :set buftype=nowrite
-    :setlocal nohidden
 
     let projectPath = s:FindProjectPath(fnamemodify(getcwd(), ':p'))
     let b:explorerPath = safePath
@@ -119,6 +119,7 @@ endfunction
 fun! s:Init()
     augroup flack
         autocmd BufEnter,VimEnter * call s:ExploreIfDirectory(expand('<amatch>'))
+        autocmd BufHidden * :call s:OnHiddenBuffer()
     augroup END
 
     com! Flack :call s:Explorer("")
@@ -128,3 +129,9 @@ if !exists('s:ranOnce')
     let s:ranOnce = 1
     call s:Init()
 endif
+
+fun! s:OnHiddenBuffer()
+    if exists('b:flackBufferNumber')
+        exec b:flackBufferNumber . "bd"
+    endif
+endf
