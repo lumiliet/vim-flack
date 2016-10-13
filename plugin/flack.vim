@@ -82,7 +82,7 @@ endf
 
 
 fun! s:Explorer(path)
-    let projectPath = FindProjectPath(expand('%:p'))
+    let projectPath = s:FindProjectPath(expand('%:p'))
 
     if !exists('b:flackBufferNumber') || strlen(a:path) == 0
         :enew
