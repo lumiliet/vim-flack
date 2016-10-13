@@ -82,25 +82,26 @@ endf
 
 
 fun! s:Explorer(path)
+    let projectPath = FindProjectPath(expand('%:p'))
+
     if !exists('b:flackBufferNumber') || strlen(a:path) == 0
         :enew
+        :set buftype=nowrite
+        nnore <silent> <buffer> <CR> :call FlackEditFileUnderCursor()<CR>
+        nnore <silent> <buffer> <BS> :call FlackUpOneDirectory()<CR>
 
         let b:flackBufferNumber = bufnr('%')
     endif
 
     let safePath = substitute(a:path, '\([^/]$\)', '\1/', '')
 
-    :set buftype=nowrite
-
-    let projectPath = s:FindProjectPath(fnamemodify(getcwd(), ':p'))
-    let b:explorerPath = safePath
 
     if strlen(a:path) == 0
         let b:explorerPath = projectPath
+    else
+        let b:explorerPath = safePath
     endif
 
-    nnore <silent> <buffer> <CR> :call FlackEditFileUnderCursor()<CR>
-    nnore <silent> <buffer> <BS> :call FlackUpOneDirectory()<CR>
     call s:InsertFind(b:explorerPath)
 
 endf
