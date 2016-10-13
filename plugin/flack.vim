@@ -119,7 +119,6 @@ endfunction
 fun! s:Init()
     augroup flack
         autocmd BufEnter,VimEnter * call s:ExploreIfDirectory(expand('<amatch>'))
-        autocmd BufHidden * :call s:OnHiddenBuffer()
     augroup END
 
     com! Flack :call s:Explorer("")
@@ -130,8 +129,3 @@ if !exists('s:ranOnce')
     call s:Init()
 endif
 
-fun! s:OnHiddenBuffer()
-    if exists('b:flackBufferNumber')
-        exec b:flackBufferNumber . "bd"
-    endif
-endf
