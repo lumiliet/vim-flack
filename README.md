@@ -2,6 +2,8 @@
 
 Simple file explorer. Displays all files in the folder and all subfolders. Makes it easy to navigate coding projects because all files in the project are visible at once.
 
+Requires `The Silver Searcher` to be installed on the system.
+
 `:Flack` will open the explorer in project root if found, or current folder. Looks for a git repo for project root.
 Use `enter` and `backspace` to navigate.
 

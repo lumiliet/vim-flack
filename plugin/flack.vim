@@ -21,24 +21,27 @@ fun! s:Delete(range)
 endf
 
 fun! s:Find(path)
-    let defaultIgnored = ['/\.git\(/\|$\)', 'node_modules/', 'vendor/']
-    let ignoredFolders = s:GetIgnoredFolders(a:path) + defaultIgnored
-    let grepExlude = join(ignoredFolders, '\|')
-    if strlen(grepExlude) == 0
-        let command = "find " . a:path
-    else
-        let command = "find " . a:path . " | grep -v '" . grepExlude . "'"
+    let command = "ag -g '' " . a:path
+    return s:ShortenFiles(split(system(command)), a:path)
+endf
+
+fun! s:GetDirectories(files)
+    let files = copy(a:files)
+    if !len(files)
+        return []
     endif
 
-    let resultOneLIne = system(command)
-    return split(resultOneLIne)
+    call filter(files, "len(matchlist(v:val, '/.*$'))")
+    call map(files, "substitute(v:val, '/[^/]*$', '', '')")
+    return files + s:GetDirectories(files)
 endf
 
 fun! s:InsertFind(path)
     let files = s:Find(a:path)
-    let shortFiles = s:ShortenFiles(files, a:path)
-    let filteredFiles = filter(shortFiles, "strlen(v:val) && match(v:val, '^\\.') == -1")
-    call s:Insert(filteredFiles)
+    let directories = s:GetDirectories(files)
+    let filesAndDirectories = uniq(sort(files + directories))
+
+    call s:Insert(filesAndDirectories)
 endf
 
 fun! s:ShortenFiles(files, path)
@@ -105,17 +108,6 @@ fun! s:Explorer(path)
     call s:InsertFind(b:explorerPath)
 
 endf
-
-function! s:GetIgnoredFolders(path)
-    let gitignore = a:path . '/.gitignore'
-    let command = "cat " . gitignore . " | grep '/$'"
-    let folders = []
-    if filereadable(gitignore)
-        let folders = split(system(command))
-    endif
-    return folders
-endfunction
-
 
 fun! s:Init()
     augroup flack
