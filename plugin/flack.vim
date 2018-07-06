@@ -21,7 +21,7 @@ fun! s:Delete(range)
 endf
 
 fun! s:Find(path)
-    let command = "ag -g '' " . a:path
+    let command = 'ag -g "" ' . a:path
     return s:ShortenFiles(split(system(command)), a:path)
 endf
 
@@ -96,8 +96,7 @@ fun! s:Explorer(path)
         let b:flackBufferNumber = bufnr('%')
     endif
 
-    let safePath = substitute(a:path, '\([^/]$\)', '\1/', '')
-
+    let safePath = substitute(trim(a:path), '\([^/]$\)', '\1/', '')
 
     if strlen(a:path) == 0
         let b:explorerPath = projectPath
